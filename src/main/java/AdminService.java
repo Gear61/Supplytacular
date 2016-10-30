@@ -29,7 +29,9 @@ public class AdminService {
                     "ORDER BY time_updated DESC;";
             PreparedStatement statement = connection.prepareStatement(getRequestsQuery);
             statement.setLong(1, timeUpdated);
-            statement.setString(2, state);
+            if (!state.isEmpty()) {
+                statement.setString(2, state);
+            }
 
             ResultSet resultSet =  statement.executeQuery();
             JSONArray requests = new JSONArray();
