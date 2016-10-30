@@ -88,6 +88,12 @@ public class Main extends HttpServlet {
                         case RequestService.PATH:
                             RequestService.createRequest(connection, response, jsonObject);
                             break;
+                        // PATH = /admin
+                        case AdminService.PATH:
+                            if (pathPieces[2].equals(RequestService.PATH)) {
+                                AdminService.getRequests(connection, response, jsonObject);
+                            }
+                            break;
                         // PATH = /presets/
                         case PresetService.PATH:
                             PresetService.addPreset(connection, response, jsonObject);
