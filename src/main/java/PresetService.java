@@ -34,11 +34,9 @@ public class PresetService {
             }
             statement.close();
             resp.getWriter().print(presets.toString());
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             resp.setStatus(Constants.BAD_REQUEST);
-        }
-        catch (IOException|SQLException exception) {
+        } catch (IOException|SQLException exception) {
             resp.setStatus(Constants.INTERNAL_SERVER_ERROR);
             resp.getWriter().print(Utils.getStackTrace(exception));
         }
@@ -61,14 +59,75 @@ public class PresetService {
 
             statement.executeUpdate();
             statement.close();
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             resp.setStatus(Constants.BAD_REQUEST);
             resp.getWriter().print(e.getMessage());
-        }
-        catch (SQLException exception) {
+        } catch (SQLException exception) {
             resp.setStatus(Constants.INTERNAL_SERVER_ERROR);
             resp.getWriter().print(Utils.getStackTrace(exception));
         }
+    }
+
+    public static void editPreset(Connection connection, HttpServletResponse resp, JSONObject requestBody) throws IOException {
+        try {
+            // Parse request body
+            long presetId;
+            try {
+                presetId = requestBody.getLong(Constants.ID_KEY);
+            } catch (JSONException e) {
+                resp.setStatus(Constants.BAD_REQUEST);
+                resp.getWriter().print(Utils.getStackTrace(e));
+                return;
+            }
+            Preset preset = getPreset(connection, resp, presetId);
+            try {
+                preset.setTitle(requestBody.getString(Constants.TITLE_KEY));
+            } catch (JSONException ignored) {}
+            try {
+                preset.setPurchaseLink(requestBody.getString(PURCHASE_LINK_KEY));
+            } catch (JSONException ignored) {}
+            try {
+                preset.setImageLink(requestBody.getString(IMAGE_LINK_KEY));
+            } catch (JSONException ignored) {}
+
+            // Update request
+            String updateQuery = "UPDATE Preset " +
+                    "SET title = ?, purchase_link = ?, image_link = ? " +
+                    "WHERE id = ?";
+            PreparedStatement statement = connection.prepareStatement(updateQuery);
+            statement.setString(1, preset.getTitle());
+            statement.setString(2, preset.getPurchaseLink());
+            statement.setString(3, preset.getImageLink());
+            statement.setLong(4, presetId);
+            statement.executeUpdate();
+            statement.close();
+        } catch (SQLException exception) {
+            resp.setStatus(Constants.INTERNAL_SERVER_ERROR);
+            resp.getWriter().print(Utils.getStackTrace(exception));
+        }
+    }
+
+    public static Preset getPreset(Connection connection, HttpServletResponse resp, long presetId) throws IOException {
+        Preset preset = new Preset();
+        try {
+            String getUserInfoQuery = "SELECT * FROM Preset WHERE id = ?;";
+            PreparedStatement statement = connection.prepareStatement(getUserInfoQuery,
+                    ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            statement.setLong(1, presetId);
+
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.first()) {
+                preset.setTitle(resultSet.getString(Constants.TITLE_KEY));
+                preset.setPurchaseLink(resultSet.getString(PURCHASE_LINK_KEY));
+                preset.setImageLink(resultSet.getString(IMAGE_LINK_KEY));
+            } else {
+                resp.setStatus(Constants.BAD_REQUEST);
+            }
+            statement.close();
+        } catch (SQLException exception) {
+            resp.setStatus(Constants.INTERNAL_SERVER_ERROR);
+            resp.getWriter().print(Utils.getStackTrace(exception));
+        }
+        return preset;
     }
 }
