@@ -20,6 +20,8 @@ public class Main extends HttpServlet {
         try {
             Connection connection = DatabaseUrl.extract().getConnection();
             if (connection != null) {
+                response.addHeader("Access-Control-Allow-Origin", "https://supplytacular.herokuapp.com/");
+
                 String path = request.getRequestURI();
                 String[] pathPieces = path.split("/");
 
@@ -68,6 +70,8 @@ public class Main extends HttpServlet {
         try {
             Connection connection = DatabaseUrl.extract().getConnection();
             if (connection != null) {
+                response.addHeader("Access-Control-Allow-Origin", "https://supplytacular.herokuapp.com/");
+
                 try {
                     JSONObject jsonObject = new JSONObject(requestBody.toString());
                     String path = request.getRequestURI();
@@ -120,6 +124,8 @@ public class Main extends HttpServlet {
         try {
             Connection connection = DatabaseUrl.extract().getConnection();
             if (connection != null) {
+                response.addHeader("Access-Control-Allow-Origin", "https://supplytacular.herokuapp.com/");
+
                 try {
                     JSONObject jsonObject = new JSONObject(requestBody.toString());
                     String path = request.getRequestURI();
